@@ -1,3 +1,4 @@
+import itertools
 from typing import Union, Callable
 
 import numpy as np

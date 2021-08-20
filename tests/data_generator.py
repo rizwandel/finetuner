@@ -4,12 +4,11 @@ import copy
 import gzip
 import os
 import urllib.request
-from collections import defaultdict
 from pathlib import Path
 
 import numpy as np
 from jina import Document, DocumentArray
-from jina.logging.profile import ProgressBar, TimeContext
+from jina.logging.profile import ProgressBar
 
 
 def fashion_match_documentarray(**kwargs):
@@ -22,9 +21,9 @@ def fashion_match_documentarray(**kwargs):
 
 
 def fashion_match_doc_generator(
+    num_total: int = 60000,
     num_pos: int = 10,
     num_neg: int = 10,
-    num_total: int = 60000,
     pos_value: int = 1,
     neg_value: int = -1,
 ):
