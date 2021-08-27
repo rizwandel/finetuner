@@ -9,6 +9,7 @@ from pathlib import Path
 import numpy as np
 from jina import Document, DocumentArray
 from jina.logging.profile import ProgressBar
+from jina.types.document.generators import from_csv
 
 
 def fashion_match_documentarray(**kwargs):
@@ -144,6 +145,79 @@ def fashion_doc_generator(download_proxy=None, is_testset=False, **kwargs):
         yield Document(
             content=(raw_img / 255.0).astype(np.float32), tags={'class': int(lbl)}
         )
+
+
+def covid_match_doc_generator(
+    num_total: int = 60000,
+    pos_value: int = 1,
+    neg_value: int = -1,
+):
+    """Get a Generator of covid-qa Documents with synthetic matches.
+
+    :param num_total: the total number of documents to return
+    :param num_pos: the number of positive matches per document
+    :param num_neg: the number of negative matches per document
+    :param pos_value: the label value of the positive matches
+    :param neg_value: the label value of the negative matches
+    :return:
+    """
+    all_docs = DocumentArray(covid_doc_generator())
+
+    copy_all_docs = copy.deepcopy(all_docs)
+
+    n_d = 0
+    for od in all_docs:
+        pos_sample = Document(text=od.tags['answer'])
+        pos_sample.tags['trainer'] = {'label': pos_value}
+
+        neg_sample = Document(text=od.tags['wrong_answer'])
+        neg_sample.tags['trainer'] = {'label': neg_value}
+
+        od.matches.append(pos_sample)
+        od.matches.append(neg_sample)
+        n_d += 1
+        yield od
+
+        if n_d >= num_total:
+            break
+
+
+def covid_doc_generator(download_proxy=None, **kwargs):
+    """
+    Download covid data.
+
+    :param download_proxy: download proxy (e.g. 'http', 'https')
+    """
+
+    download_dir = './data'
+
+    Path(download_dir).mkdir(parents=True, exist_ok=True)
+
+    targets = {
+        'covid-csv': {
+            'url': 'https://static.jina.ai/chatbot/dataset.csv',
+            'filename': os.path.join(download_dir, 'dataset.csv'),
+        }
+    }
+
+    # download the data
+    opener = urllib.request.build_opener()
+    opener.addheaders = [('User-agent', 'Mozilla/5.0')]
+    if download_proxy:
+        proxy = urllib.request.ProxyHandler(
+            {'http': download_proxy, 'https': download_proxy}
+        )
+        opener.add_handler(proxy)
+    urllib.request.install_opener(opener)
+    with ProgressBar('download chat-bot dataset') as t:
+        for k, v in targets.items():
+            if not os.path.exists(v['filename']):
+                urllib.request.urlretrieve(
+                    v['url'], v['filename'], reporthook=lambda *x: t.update(0.01)
+                )
+
+    with open(targets['covid-csv']['filename']) as fp:
+        yield from from_csv(fp, field_resolver={'question': 'text'})
 
 
 def _load_mnist(path, upsampling: int = 1, channels: int = 0, channel_axis=-1):
