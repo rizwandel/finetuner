@@ -64,6 +64,35 @@ class TripletMiner(BaseClassMiner[torch.Tensor]):
         return torch.where(triplets)
 
 
+class NumpyTripletMiner(BaseClassMiner[torch.Tensor]):
+    def mine(
+        self, labels: torch.Tensor, distances: torch.Tensor
+    ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        """Generate all possible triplets.
+
+        :param labels: A 1D tensor of item labels (classes)
+        :param distances: A tensor matrix of pairwise distance between each two item
+            embeddings
+
+        :return: three 1D tensors, holding the anchor index, positive index and
+            negative index of each triplet, respectively
+        """
+        import numpy as np
+
+        labels_np = labels.cpu().numpy()
+        # distances = distances.cpu().numpy()
+
+        labels1, labels2 = np.expand_dims(labels_np, 1), np.expand_dims(labels_np, 0)
+        matches = (labels1 == labels2).astype(np.uint8)
+        diffs = matches ^ 1
+
+        np.fill_diagonal(matches, 0)
+        triplets = np.expand_dims(matches, 2) * np.expand_dims(diffs, 1)
+
+        triplet_inds = np.where(triplets)
+        return (torch.tensor(x, device=labels.device) for x in triplet_inds)
+
+
 class SiameseSessionMiner(BaseSessionMiner[torch.Tensor]):
     def mine(
         self, labels: Tuple[torch.Tensor, torch.Tensor], distances: torch.Tensor
