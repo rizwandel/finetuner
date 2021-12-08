@@ -26,7 +26,7 @@ class SiameseMiner(BaseClassMiner[paddle.Tensor]):
         """
         assert len(distances) == len(labels)
 
-        # Needed, else sigfault if empty
+        # Needed, else segfault if empty
         if labels.size == 0:
             return _empty_tensor(), _empty_tensor(), _empty_tensor()
 
@@ -131,8 +131,8 @@ class TripletSessionMiner(BaseSessionMiner[paddle.Tensor]):
     ) -> Tuple[paddle.Tensor, paddle.Tensor, paddle.Tensor]:
         """Generate all possible triplets for each session.
 
-        :param labels: A tuple of 1D tensors, denotind the items' session and match
-            type (0 for anchor, 1 for postive match and -1 for negative match),
+        :param labels: A tuple of 1D tensors, denoting the items' session and match
+            type (0 for anchor, 1 for positive match and -1 for negative match),
             respectively
         :param distances: A tensor matrix of pairwise distance between each two item
             embeddings

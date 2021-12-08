@@ -81,12 +81,12 @@ def fit(
         optimizer and a learning rate scheduler.
     :param learning_rate: Learning rate for the default optimizer. If you
         provide a custom optimizer, this learning rate will not apply.
-    :param scheduler_step: At which interval should the learning rate sheduler's
-        step function be called. Valid options are "batch" and "epoch".
+    :param scheduler_step: At which interval should the learning rate scheduler's
+        step function be called. Valid options are `"batch"` and `"epoch"`.
     :param device: The device to which to move the model. Supported options are
         ``"cpu"`` and ``"cuda"`` (for GPU)
     :param callbacks: A list of callbacks. The progress bar callback
-        will be pre-prended to this list.
+        will be prepended to this list.
     """
     ft = _get_tuner_class(embed_model)
 

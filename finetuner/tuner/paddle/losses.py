@@ -135,7 +135,7 @@ class TripletLoss(PaddleLoss):
 
     def __init__(
         self,
-        distance: str = "cosine",
+        distance: str = 'cosine',
         margin: float = 1.0,
         miner: Optional[BaseMiner] = None,
     ):
